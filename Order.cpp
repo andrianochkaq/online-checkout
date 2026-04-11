@@ -209,18 +209,31 @@ void Order::updateStatusAutomatically() {
 
 void Order::finalizeOrder() {
 
-    if (products.empty()) {
-        cout << "\n Нема товарів!\n1. Передзвонити\n2. Замінити\nВибір: ";
-        int ch;
-        cin >> ch;
-        cin.ignore();
+    {
 
-        if (ch == 1) {
-            cout << "Номер: ";
-            getline(cin, phoneNumber);
-        }
+    // ❌ якщо кошик пустий — просто вихід
+    if (products.empty()) {
+        cout << "\nНема товарів!\n";
         return;
     }
+
+    // питання про відсутність товару
+    cout << "\nЯкщо товару не буде:\n";
+    cout << "1. Передзвонити\n2. Замінити автоматично\nВибір: ";
+
+    int ch;
+    cin >> ch;
+    cin.ignore();
+
+    if (ch == 1) {
+        cout << "Номер: ";
+        getline(cin, phoneNumber); // зберігаємо номер
+    }
+    else {
+        phoneNumber = "REPLACE"; // маркер для заміни
+    }
+
+    // --- Доставка ---
 
     if (deliveryType == DeliveryType::Delivery) {
         cout << "\nХто отримує?\n1. Я\n2. Інша людина\nВибір: ";
@@ -487,9 +500,17 @@ void Order::saveToFile(const string& filename) const {
     else
         file << "Оплата: Готівка (очікується)\n";
 
-    if (!phoneNumber.empty())
-        file << "Передзвонити: " << phoneNumber << "\n";
+    file << "Якщо товару не буде: ";
 
+if (phoneNumber == "REPLACE") {
+    file << "Замінити (ціна може бути змінена)\n";
+}
+else if (!phoneNumber.empty()) {
+    file << "Передзвонити: " << phoneNumber << "\n";
+}
+else {
+    file << "Не вказано\n";
+}
     if (deliveryType == DeliveryType::Delivery) {
         if (otherPerson) {
             file << "Отримувач: " << receiverName << "\n";
